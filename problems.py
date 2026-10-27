@@ -56,12 +56,46 @@ def findClosestHexCenter(position, centers):
     distances = np.linalg.norm(centers - position, axis = 1)
     return np.argmin(distances)
 
-#def makeVectorField():
 
-#def makeScalarField():
+#this function is for the rover, the scalar field determines the height of the terrain
+#keeping the blur the same for all iterations but this can be changed later on BUT IT HAS TO BE AN ODD NUMBER BECAUSE THE BLUR NEEDS A CENTER
+def makeScalarField(rows, cols, randomNum, blur=5):
+    #creates a 2d array with cols as columns and rows as rows filled with random numbers from 0 to 1 
+    noise = randomNum.random((rows,cols)).astype(np.float32)
+    #the terrain gets smooth through a gaussian blur so that the terrain is more cohessive and actually is an average of the terrain around it
+    smooth = cv2.GaussianBlur(noise,(blur,blur),0)
+    #makes it so the highest point is 1 and the lowest is 0 so each grid has the same scale
+    smooth = (smooth - smooth.min())/(smooth.max()-smooth.min())
+    #turns the table into a list in the same order as makeHexGrid() function
+    return smooth.flatten()
 
-#def combineFields():
+def makeVectorField(rows, cols, randomNum, blur=5):
+    #strength field represents the force of a vector
+    strength = makeScalarField(rows, cols, randomNum, blur)
+    #angle field represents the direction of a vector
+    angle = makeScalarField(rows, cols, randomNum, blur)
+    #convert to angles 
+    angle = angle * 360
+    #convert degrees into radians
+    angle = np.radians(angle)
+    #x coordinate push
+    x = np.cos(angle) * strength
+    #y coordinate push
+    y = np.sin(angle) * strength
+    #return 2d stack with columns so 1st column is the xs and 2nd is the ys
+    return np.stack([x,y], axis= 1)
 
 
-def Simulation():
+#the boat faces both water and air conditions so both the fields get combined
+def combineFields(fieldWater,fieldWind):
+    #the wind has a weight of .5 because it moves the boat less than water does
+    finalField = fieldWater + (fieldWind * 0.5)
+
+    return finalField
+    
+#this function picks the end goal and the start point for all the vehicles
+#def pickStartAndGoal():
+    
+
+#def Simulation():
 
