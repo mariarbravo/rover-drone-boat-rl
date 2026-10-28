@@ -94,8 +94,18 @@ def combineFields(fieldWater,fieldWind):
     return finalField
     
 #this function picks the end goal and the start point for all the vehicles
-#def pickStartAndGoal():
-    
+def pickStartAndGoal(centers,rows,cols, randomNum):
+    #the distance has to be at least third of the length of the either the column or row depending on which is longer to keep the difficulty somewhat similar amongst simulations
+    minDistance = max(rows,cols)/3
+    #pick a random start 
+    start = randomNum.choice(len(centers))
+    #get the distance between the start all the other hexes
+    distances = np.linalg.norm(centers- centers[start], axis =1)/np.sqrt(3)
+    #get all the hexes that are far enough in a list 
+    possibleGoals = np.where(distances >= minDistance)[0]
+    #get the goal randomly
+    goal = randomNum.choice(possibleGoals)
+    return int(start), int(goal)
 
 #def Simulation():
 
