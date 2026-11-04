@@ -8,7 +8,7 @@ import cv2
 
 class Vehicle:
     #create a world for any kind of vehicle when an instance of the class is created so all the other functions can work and not crash if called without having to manually create the world first
-    def __init__(self,rows=12, columns=15,seed=0, maxSteps=100):
+    def __init__(self,rows=10, columns=10,seed=0, maxSteps=100):
         self.rows = rows
         self.columns = columns
         self.seed = seed
@@ -40,7 +40,7 @@ class Vehicle:
     directions=["E","NE","NW","W","SW","SE"]
     
     #calculates intended movement
-    def move(self,speed, angle, currentLocation):
+    def intendedMove(self,speed, angle):
         #radians are needed for np to calculate x and y components with sin and cos functions
         radians = np.radians(angle)
         #change of location in x ( sqrt3 circumradii per step, that is 1 unit to INTEND TO move from one hex center to another)
@@ -61,14 +61,41 @@ class Vehicle:
             for a in self.angles:
                 moves.append((s,a))
         return moves
+    
+    #check if the agent ran out of moves and lost or if it won
+    def gameOver(self):
+        if self.steps >= self.maxSteps or self.gotToGoal() == True:
+            return True
+        else:
+            return False
 
-        
+
+    #check if the agent won by getting to the goal 
+    def gotToGoal(self):
+        return self.currentIndex == self.goal
+
+    #move the vehicle through the grid taking into account disturbance and the intended move
+    def actuallyMove(self, moveChosen):
+        speed, angle = moveChosen
+        intended = self.intendedMove(speed, angle)
+        actualMove = intended + self.disturbance(intended)
+        movedPosition = self.currentLocation + actualMove
+        self.currentIndex = int(findClosestHexCenter(movedPosition, self.centers))
+        #look for the exact center of the hex for the index to start the next move from there 
+        self.currentLocation = self.centers[self.currentIndex]
+        #remember what hexes it has already been in
+        self.path.append(self.currentIndex)
+        #increment the number of moves the agent has performed
+        self.steps= self.steps +1
+
+
+    #def 
 
 #class Rover(Vehicle):
- #   def move():
+ #   
 
 #class Drone(Vehicle):
- #   def move():
+ # 
 
 #class Boat(Vehicle):
     
