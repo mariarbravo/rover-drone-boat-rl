@@ -7,13 +7,38 @@ import matplotlib.pyplot as plt
 import cv2
 
 class Vehicle:
-    def __init__(self,currentLocation):
-        self.currentLocation = currentLocation
+    #create a world for any kind of vehicle when an instance of the class is created so all the other functions can work and not crash if called without having to manually create the world first
+    def __init__(self,rows=12, columns=15,seed=0, maxSteps=100):
+        self.rows = rows
+        self.columns = columns
+        self.seed = seed
+        self.maxSteps =maxSteps
+        #create the hex grid calling the function
+        self.centers = makeHexGrid(rows,columns)
+        #random number generator is created once, and there is a seed to be able to create different maps later on when wanting to test
+        self.randomNum = np.random.default_rng(seed)
+        self.start,self.goal = pickStartAndGoal(self.centers,rows,columns,self.randomNum)
+        self.reset()
+
+
+    #take the vehicle back to the start
+    def reset(self):
+        #number of hex that the vehicle starts in
+        self.currentIndex = self.start
+        #position of the hex that the vehicle starts in 
+        self.currentLocation = self.centers[self.start]
+        #amount of moves yet
+        self.steps = 0
+        #which hexes have been visited 
+        self.path = [self.start]
+
+
     #there are only 3 different speeds and 1 moves 1 unit per step and 2 moves 2 units per step and so on
     speed=[1,2,3]
     #angles work the same as in math; 0 points east and the direction goes counterclockwise
     angles=[0, 60, 120, 180, 240, 300] 
     directions=["E","NE","NW","W","SW","SE"]
+    
     #calculates intended movement
     def move(self,speed, angle, currentLocation):
         #radians are needed for np to calculate x and y components with sin and cos functions
@@ -24,7 +49,18 @@ class Vehicle:
         dy = np.sqrt(3) * speed * np.sin(radians)
         #returns how far the vehivle wants to move, but still no movement performed
         return np.array([dx,dy])
+    
+    #add disturbance (in the parent class there is no disturbance but each child will add their own type of distrubance to the terrain)
+    def disturbance(self, intended):
+        return np.array([0.0,0.0])
 
+    #called by algorithms.py, will return all the possible movements 
+    def getLegalMoves(self):
+        moves =[]
+        for s in self.speed:
+            for a in self.angles:
+                moves.append((s,a))
+        return moves
 
         
 
