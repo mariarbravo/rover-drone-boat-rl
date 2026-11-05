@@ -35,7 +35,8 @@ class Vehicle:
         self.steps = 0
         #which hexes have been visited 
         self.path = [self.start]
-
+        self.reward = 0
+        self.totalReward = 0
 
     #there are only 3 different speeds and 1 moves 1 unit per step and 2 moves 2 units per step and so on
     speed=[1,2,3]
@@ -44,6 +45,7 @@ class Vehicle:
     directions=["E","NE","NW","W","SW","SE"]
     color = "black"
     background = "grey"
+
     
     #calculates intended movement
     def intendedMove(self,speed, angle):
@@ -93,6 +95,8 @@ class Vehicle:
         self.path.append(self.currentIndex)
         #increment the number of moves the agent has performed
         self.steps= self.steps +1
+        #addn the reward everytime move function is called
+        self.giveReward()
 
     def showWorld(self):
         x = self.centers[:,0]
@@ -106,7 +110,14 @@ class Vehicle:
         plt.plot(pathx,pathy,color=self.color)
         plt.show()
 
-
+    #each step costs -1
+    #getting to the goal gives 100
+    def giveReward(self):
+        if self.gotToGoal() == True:
+            self.reward =  100
+        else:
+            self.reward = - 1
+        self.totalReward = self.totalReward + self.reward
     #def 
 #types of vehicles
 
@@ -220,6 +231,7 @@ def pickStartAndGoal(centers,rows,cols, randomNum):
     #get the goal randomly
     goal = randomNum.choice(possibleGoals)
     return int(start), int(goal)
+
 
 
 #def Simulation():
