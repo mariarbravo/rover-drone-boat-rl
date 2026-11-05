@@ -18,8 +18,12 @@ class Vehicle:
         #random number generator is created once, and there is a seed to be able to create different maps later on when wanting to test
         self.randomNum = np.random.default_rng(seed)
         self.start,self.goal = pickStartAndGoal(self.centers,rows,columns,self.randomNum)
+        self.buildSpecificEnvironment()
         self.reset()
 
+    #defined here for parent class vehicle so it does not crash, each diffrent kind of vehicle has its own environment
+    def buildSpecificEnvironment(self):
+        self.environment = None
 
     #take the vehicle back to the start
     def reset(self):
@@ -38,6 +42,8 @@ class Vehicle:
     #angles work the same as in math; 0 points east and the direction goes counterclockwise
     angles=[0, 60, 120, 180, 240, 300] 
     directions=["E","NE","NW","W","SW","SE"]
+    color = "black"
+    background = "grey"
     
     #calculates intended movement
     def intendedMove(self,speed, angle):
@@ -88,17 +94,62 @@ class Vehicle:
         #increment the number of moves the agent has performed
         self.steps= self.steps +1
 
+    def showWorld(self):
+        x = self.centers[:,0]
+        y = self.centers[:,1]
+        #scatter plot with all of the centers in the hex grid
+        plt.scatter(x ,y, color=self.background)
+        #show the vehicle moving
+        path = self.centers[self.path]
+        pathx=path[:,0]
+        pathy=path[:,1]
+        plt.plot(pathx,pathy,color=self.color)
+        plt.show()
+
 
     #def 
+#types of vehicles
 
-#class Rover(Vehicle):
- #   
+class Rover(Vehicle):
+    #colors for plotting, each vehicle is different because it is prettier that way
+    color = "silver"
+    background = "chocolate"
 
-#class Drone(Vehicle):
- # 
+    def buildSpecificEnvironment(self):
+        self.environment = makeScalarField(self.rows, self.columns, self.randomNum)
+    #add terrain disturbance (hills)
+    #the rover has a scalar field so it cannot just be added so the environment will be transformed into a slow down for the intended move, in this case 60% because it is close to 2/3 and in the worst case scenario where the height is 1 if the drover chooses max speed 3 it will still move 1
+    def disturbance(self, intended):
+        #max -60% but depends on the scalar disturbance (0-1) * intended 
+        calulateSlowDownFromSlope= -.60 * self.environment[self.currentIndex] * intended 
+        return calulateSlowDownFromSlope
 
-#class Boat(Vehicle):
+class Drone(Vehicle):
+    color = "black"
+    background = "skyblue"
+
+
+    def buildSpecificEnvironment(self):
+        self.environment = makeVectorField(self.rows, self.columns, self.randomNum)
+    #add air disturbance(vector forces acting on the drone)
+    #the disturbance function is used to send the conditions to actuallyMove() function so it can add it to the intended move and get the actual move that will happen
+    def disturbance(self,intended):
+        return self.environment[self.currentIndex]
     
+
+class Boat(Vehicle):
+    color = "navy"
+    background ="teal"
+    def buildSpecificEnvironment(self):
+        #boat has 2 forces working agaisnt it
+        water = makeVectorField(self.rows, self.columns, self.randomNum)
+        wind = makeVectorField(self.rows, self.columns, self.randomNum)
+
+        self.environment = combineFields(water, wind)
+    #add air disturbance and water disturbance with the combined field of vectors
+    def disturbance(self,intended):
+        return self.environment[self.currentIndex]
+
         
     #this creates a hex grid for the simulation and takes as input how many rows are needed and how many columns
 def makeHexGrid(rows, cols):
@@ -169,6 +220,7 @@ def pickStartAndGoal(centers,rows,cols, randomNum):
     #get the goal randomly
     goal = randomNum.choice(possibleGoals)
     return int(start), int(goal)
+
 
 #def Simulation():
 
