@@ -14,5 +14,6 @@ algorithm and one player uses another. If your problem is snake, you might show 
 (whichever comes first).
 '''
 
-demoGame = prb.Game(prb.TicTacToe(),alg.RandomAgent(),alg.RandomAgent())
-demoGame.playGame()
+demoGame = prb.SimulationDrone(prb.Drone(),alg.RandomAgent())
+demoGame = prb.SimulationBoat(prb.Boat(),alg.RandomAgent())
+demoGame = prb.SimulationRover(prb.Rover(),alg.RandomAgent())
