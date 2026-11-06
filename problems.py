@@ -45,7 +45,7 @@ class Vehicle:
     directions=["E","NE","NW","W","SW","SE"]
     color = "black"
     background = "grey"
-
+    type = "No type"
     
     #calculates intended movement
     def intendedMove(self,speed, angle):
@@ -103,11 +103,16 @@ class Vehicle:
         y = self.centers[:,1]
         #scatter plot with all of the centers in the hex grid
         plt.scatter(x ,y, color=self.background)
+        #make the start and the goal visible
+        plt.scatter(self.centers[self.start][0], self.centers[self.start][1], color = "red")
+        plt.scatter(self.centers[self.goal][0], self.centers[self.goal][1], color = "gold")
         #show the vehicle moving
         path = self.centers[self.path]
         pathx=path[:,0]
         pathy=path[:,1]
         plt.plot(pathx,pathy,color=self.color)
+        #add the total reward at the end
+        plt.title(self.type + " Total Reward: " + str(self.totalReward))
         plt.show()
 
     #each step costs -1
@@ -123,8 +128,9 @@ class Vehicle:
 
 class Rover(Vehicle):
     #colors for plotting, each vehicle is different because it is prettier that way
-    color = "silver"
-    background = "chocolate"
+    color = "black"
+    background = "tan"
+    type = "Rover"
 
     def buildSpecificEnvironment(self):
         self.environment = makeScalarField(self.rows, self.columns, self.randomNum)
@@ -138,6 +144,7 @@ class Rover(Vehicle):
 class Drone(Vehicle):
     color = "black"
     background = "skyblue"
+    type ="Drone"
 
 
     def buildSpecificEnvironment(self):
@@ -151,6 +158,8 @@ class Drone(Vehicle):
 class Boat(Vehicle):
     color = "navy"
     background ="teal"
+    type = "Boat"
+
     def buildSpecificEnvironment(self):
         #boat has 2 forces working agaisnt it
         water = makeVectorField(self.rows, self.columns, self.randomNum)
@@ -233,6 +242,21 @@ def pickStartAndGoal(centers,rows,cols, randomNum):
     return int(start), int(goal)
 
 
+#simulations for demo to call of each kind of vehicle
+def SimulationDrone(drone, agent):
+    while not drone.gameOver():
+        agentMove = agent.getMove(drone)
+        drone.actuallyMove(agentMove)
+    drone.showWorld()
 
-#def Simulation():
+def SimulationBoat(boat, agent):
+    while not boat.gameOver():
+        agentMove = agent.getMove(boat)
+        boat.actuallyMove(agentMove)
+    boat.showWorld()
 
+def SimulationRover(rover, agent):
+    while not rover.gameOver():
+        agentMove = agent.getMove(rover)
+        rover.actuallyMove(agentMove)
+    rover.showWorld()
